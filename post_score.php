@@ -16,7 +16,7 @@ if($query){
 mysqli_query($dbc, $query); 
 
 // sending query
-$result = "SELECT Name, Score FROM myTable ORDER BY Score DESC";
+$result = "SELECT Name, Score FROM myTable ORDER BY Score DESC LIMIT 10";
 $data = mysqli_query($dbc, $result);
 if (!$result) {
     die("Query to show fields from table failed");
