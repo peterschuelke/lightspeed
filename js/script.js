@@ -4,10 +4,9 @@ var c = canvas.getContext('2d');
 var keyboard = { };
 var playerBullets = [];
 var tick = 0;
-var mtick = 0;
 var points = 0;
 
-//draw background
+// draw background
 c.fillStyle = "black";
 c.fillRect(0,0,1024,768);
 
@@ -15,7 +14,7 @@ var game = {
     state: "start",
 };
 
-//define ship
+// define ship
 ship ={
   counter:0,
   s:15,
@@ -49,17 +48,17 @@ var mouse = {
 
  
 canvas.addEventListener("click", function(){
-    mouse.down = true;
+  mouse.down = true;
 }, false);
  
 canvas.addEventListener("mousemove", function(evt){
-    var pos = getMousePos(canvas, evt);
-    mouse.pos.x = pos.x;
-    mouse.pos.y = pos.y;
+  var pos = getMousePos(canvas, evt);
+  mouse.pos.x = pos.x;
+  mouse.pos.y = pos.y;
 });
  
 canvas.addEventListener("mouseout", function(evt){
-    mouse.pos = {};
+  mouse.pos = {};
 });
 
 loadResources();
@@ -109,6 +108,7 @@ function updateGame() {
     meteors = [];
     points = 0;
     overlay2.score = points;
+    $('#overlay').hide();
   }
   
   if(overlay.counter >= 0) {
@@ -119,19 +119,19 @@ function updateGame() {
 setInterval(function(){
   s=Math.random();
   t=Math.random();
-    var meteor ={
-      dir:Math.floor(Math.random()*360),
-      s:Math.random(),
-      //r:Math.floor((15-12+1)*Math.random()+12),
-      r:15,
-      x:2048 * Math.cos(s) * Math.sin(t) -512,
-      y:2048 * Math.sin(s) * Math.sin(t)-631,
-      z:1024 * Math.cos(t)
-    };
-    meteors.push(meteor);
-    meteors.sort(function (a, b) {
-        return a.z < b.z;
-    });
+  var meteor ={
+    dir:Math.floor(Math.random()*360),
+    s:Math.random(),
+    //r:Math.floor((15-12+1)*Math.random()+12),
+    r:15,
+    x:2048 * Math.cos(s) * Math.sin(t) -512,
+    y:2048 * Math.sin(s) * Math.sin(t)-631,
+    z:1024 * Math.cos(t)
+  };
+  meteors.push(meteor);
+  meteors.sort(function (a, b) {
+      return a.z < b.z;
+  });
 
 },40);
 
@@ -146,9 +146,9 @@ function doSetup() {
 
 function attachEvent(node,name,func) {
   if(node.addEventListener) {
-      node.addEventListener(name,func,false);
+    node.addEventListener(name,func,false);
   } else if(node.attachEvent) {
-      node.attachEvent(name,func);
+    node.attachEvent(name,func);
   }
 };
 
@@ -158,6 +158,7 @@ function attachEvent(node,name,func) {
 
 
 function firePlayerBullet() {
+  if(ship.state == "hit" || ship.state == "dead") return;
   //create a new bullet
   playerBullets.push({
     x: ship.x,
@@ -183,8 +184,8 @@ function collision(){
     dis = Math.sqrt(xsqr + ysqr + zsqr)-ship.r-meteor.r;
     if (dis <= 0) {
       ship.state= "hit";
-    name = '<?php echo $_GET["name"]; ?>';
-    score = points;
+      name = '<?php echo $_GET["name"]; ?>';
+      score = points;
     }
   };
 };
@@ -222,7 +223,6 @@ function getDirection(){
 }
 
 function updateMovement(){
-  
   if(ship.state == "hit") {
     ship.counter++;
 
@@ -294,23 +294,23 @@ function updateMovement(){
 };
 
 function getMousePos(canvas, evt){
-    // get canvas position
-    var obj = canvas;
-    var top = 0;
-    var left = 0;
-    while (obj.tagName != 'BODY') {
-      top += obj.offsetTop;
-      left += obj.offsetLeft;
-      obj = obj.offsetParent;
-    }
- 
-    // return relative mouse position
-    var mouseX = evt.clientX - left + window.pageXOffset;
-    var mouseY = evt.clientY - top + window.pageYOffset;
-    return {
-      x: mouseX,
-      y: mouseY
-    };
+  // get canvas position
+  var obj = canvas;
+  var top = 0;
+  var left = 0;
+  while (obj.tagName != 'BODY') {
+    top += obj.offsetTop;
+    left += obj.offsetLeft;
+    obj = obj.offsetParent;
+  }
+
+  // return relative mouse position
+  var mouseX = evt.clientX - left + window.pageXOffset;
+  var mouseY = evt.clientY - top + window.pageYOffset;
+  return {
+    x: mouseX,
+    y: mouseY
+  };
 };
 
 function updatePlayerBullets() {
@@ -348,7 +348,8 @@ function updateMeteorCollision(x, y) {
     dis = Math.sqrt(xsqr + ysqr)-meteor.r;
     if (dis <= 0) {
       meteors.splice(i, 1);
-      drawMeteorExplosion(x,y);
+      //drawMeteorExplosion(x,y);
+      drawExplosion(c, 'meteor', x, y);
       points += 10;
       overlay2.score = points;
     }
@@ -370,7 +371,8 @@ function drawShip(c){
   if(ship.state == "dead") return;
     
   if(ship.state == "hit") {
-    drawShipExplosion(c);
+    drawExplosion(c, 'ship', ship.x, ship.y);
+    //drawShipExplosion(c);
     return;
   };
 
@@ -418,9 +420,8 @@ function drawMeteors(c){
 };
 
 var particles = [];
-function drawShipExplosion(c) {
-  //Play explosion sound when bhit
-  splosion.play();
+function drawExplosion(c, entity, x, y){
+
   //start
   if(ship.counter == 0) {
     particles = []; //clear any old values
@@ -439,64 +440,40 @@ function drawShipExplosion(c) {
       c.drawImage(
         explosion_image, // the image of the sprite sheet
         x3,0,64,62, // source coords inside sheet (x,y,w,h)
-        (ship.x-32),(ship.y-31),64,62 // destination coordinates on canvas (x,y,w,h)
+        x,y,64,62 // destination coordinates on canvas (x,y,w,h)
       );
       tick++;
     };
     var intervalBoom = setInterval(drawBoom,1000/30);
     setTimeout(function() { clearInterval(intervalBoom)}, 480);
   };
-  
-  if(ship.counter > 0) {
-    for(var i=0; i<particles.length; i++) {
-      var p = particles[i];
-      p.x += p.xv;
-      p.y += p.yv;
-      var v = 255-p.age*3;
-      c.fillStyle = "rgb("+v+","+v+","+v+")";
-      c.fillRect(p.x,p.y,3,3);
-      p.age++;
-    };
-  };
-};
-
-function drawMeteorExplosion(x,y) {
+  //Play explosion sound when hit
+  if (entity == 'meteor'){
     asteroid.currentTime = 0;
     asteroid.play();
-  //start
-  if(ship.counter == 0) {
-    particles = []; //clear any old values
-    for(var i = 0; i<50; i++) {
-      particles.push({
-        x: x,
-        y: y,
-        xv: (Math.random()-0.5)*2.0*5.0,  // x velocity
-        yv: (Math.random()-0.5)*2.0*5.0,  // y velocity
-        age: 0,
-      });
+  }
+  if (entity == 'ship'){
+    splosion.play();
+
+    if(ship.counter > 0) {
+      for(var i=0; i<particles.length; i++) {
+        var p = particles[i];
+        p.x += p.xv;
+        p.y += p.yv;
+        var v = 255-p.age*3;
+        c.fillStyle = "rgb("+v+","+v+","+v+")";
+        c.fillRect(p.x,p.y,3,3);
+        p.age++;
+      };
     };
-    function drawMeteorBoom(){
-      var frame = mtick % 16; //7 is the number of frames in the sprite sheet
-      var x3 = frame * 64; //48 is the width of each frame
-      c.drawImage(
-        explosion_image, // the image of the sprite sheet
-        x3,0,64,62, // source coords inside sheet (x,y,w,h)
-        (x-32),(y-31),64,62 // destination coordinates on canvas (x,y,w,h)
-      );
-      mtick++;
-    };
-    var intervalMeteorBoom = setInterval(drawMeteorBoom,1000/30);
-    setTimeout(function() { clearInterval(intervalMeteorBoom)}, 480);
-  };
-};
+  }
+}
 
 function drawScore(c) {
-  
   c.save();
   c.fillStyle = "rgb(255,255,255)";
   c.font = "14pt Arial";
   c.fillText(overlay2.scoreTitle, 940,730);
-  c.font = "14pt Arial";
   c.fillText(overlay2.score, 970,750);
   c.restore();
 };
