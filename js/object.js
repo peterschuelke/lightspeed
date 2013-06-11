@@ -73,9 +73,9 @@ function game(){
 
   this.setProperites = function(){
     self.state = "start";
-    ship = new ship(mouse, keyboard, meteorField, game);
-    meteorField = new meteorField(ship, c, game);
-    drawCanvas = new drawCanvas(ship, meteorField, c, game)
+    ship = new Ship(mouse, keyboard, MeteorField, game);
+    meteorField = new MeteorField(ship, c, game);
+    drawCanvas = new DrawCanvas(ship, meteorField, c, game)
     game.overlay.counter = -1;
     game.points = 0;
     // overlayEnd.score = points;
@@ -151,7 +151,7 @@ function game(){
 }
 
 
-function ship(mouse, keyboard, game){
+function Ship(mouse, keyboard, game){
   var self = this;
 	this.counter = 0;
   this.s = 15;
@@ -284,7 +284,7 @@ function meteor(){
   return this;
 };
 
-function meteorField(ship, c, game){
+function MeteorField(ship, c, game){
   var self = this;
   this.meteors = new Array();
 
@@ -371,7 +371,7 @@ function meteorField(ship, c, game){
   }
 }
 
-function drawCanvas(ship, meteorField, c, game){
+function DrawCanvas(ship, meteorField, c, game){
   var self = this;
   this.drawLoop = function(){
     self.clearCanvas();
